@@ -1,0 +1,83 @@
+# This is the name of the workflow, which will be displayed in the GitHub Actions tab.
+name: Deploy Production to GitHub Pages
+
+# This section defines the events that trigger the workflow.
+on:
+  # Trigger the workflow on pushes to the 'main' branch.
+  push:
+    branches:
+      - main
+  
+  # Allow the workflow to be manually triggered from the GitHub Actions UI.
+  workflow_dispatch:
+
+# Concurrency settings ensure that only one deployment runs at a time for the same branch.
+# 'cancel-in-progress: true' will automatically cancel any older, running workflows
+# in this group when a new commit is pushed. This saves runner time and ensures
+# that only the latest version of your code is deployed.
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel.
+jobs:
+  # The 'build' job is responsible for building the static assets for the site.
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      
+      # It's a best practice to add linting and testing steps here
+      # to ensure code quality before building and deploying.
+      # - name: Run Linter
+      #   run: npm run lint
+      # - name: Run Tests
+      #   run: npm test
+
+      - name: Install dependencies
+        # Using 'npm install' is more flexible if a lock file is not present.
+        # For more reproducible builds, commit a 'package-lock.json' file and switch to 'npm ci'.
+        run: npm install
+
+      - name: Build the application
+        # This step executes the 'build' script defined in your package.json,
+        # which bundles the React app for production using Vite.
+        run: npm run build
+
+      - name: Upload build artifact
+        # This action prepares the build output ('./dist' directory) for deployment
+        # by uploading it as a GitHub Pages artifact.
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './dist'
+
+  # The 'deploy' job takes the build artifact and deploys it to GitHub Pages.
+  deploy:
+    # This job will only run after the 'build' job has completed successfully.
+    needs: build
+
+    # Set the required permissions for the GITHUB_TOKEN to allow deployment.
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+
+    # Specify the deployment environment. This enables features like protection rules
+    # and provides the deployment URL in the GitHub UI.
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        # This action handles the entire deployment process to GitHub Pages.
+        # It automatically fetches the artifact uploaded by the 'build' job.
+        uses: actions/deploy-pages@v4
