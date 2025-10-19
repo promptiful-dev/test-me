@@ -1,30 +1,201 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Test Me</title>
-  <link rel="stylesheet" href="./index.css">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
-<script type="importmap">
-{
-  "imports": {
-    "react": "https://aistudiocdn.com/react@^19.2.0",
-    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
-    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.25.0",
-    "three": "https://aistudiocdn.com/three@^0.180.0",
-    "three/": "https://aistudiocdn.com/three@^0.180.0/",
-    "react/": "https://aistudiocdn.com/react@^19.2.0/",
-    "vite": "https://aistudiocdn.com/vite@^7.1.10",
-    "@vitejs/plugin-react": "https://aistudiocdn.com/@vitejs/plugin-react@^5.0.4"
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Study Test — Processing</title>
+<style>
+  :root{
+    --bg:#070812;
+    --glass: rgba(255,255,255,0.06);
+    --glass-2: rgba(255,255,255,0.04);
+    --accent: #7afcff;
+    --accent-2: #7a7bff;
+    --neon: 0 8px 30px rgba(122,191,255,0.08), 0 0 40px rgba(122,191,255,0.08);
+    --card-radius: 18px;
+    --text:#e8f0ff;
   }
-}
-</script>
+
+  /* Mobile-first base */
+  html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;color:var(--text);background:var(--bg);-webkit-font-smoothing:antialiased}
+  .wrap{min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:18px;position:relative;overflow:hidden}
+
+  /* Animated holographic background layers */
+  .bg-layer{
+    position:absolute;inset:-20% -10% auto -10%;height:60vh;filter:blur(40px);opacity:0.9;pointer-events:none;
+    transform:translateY(-10%);
+    background: radial-gradient(closest-side at 20% 30%, rgba(122,191,255,0.18), transparent 18%),
+                radial-gradient(closest-side at 80% 70%, rgba(186,122,255,0.12), transparent 22%);
+    mix-blend-mode:screen;
+  }
+  .floating-shapes{
+    position:absolute;right:-10%;top:10%;width:220px;height:220px;background:
+      conic-gradient(from 200deg, rgba(122,191,255,0.12), transparent 60%);
+    filter:blur(28px);opacity:0.9;transform:rotate(12deg);
+  }
+
+  header{width:100%;display:flex;flex-direction:row;align-items:center;justify-content:space-between;margin-bottom:14px;z-index:3}
+  .title{font-size:16px;font-weight:600}
+  .subtitle{font-size:12px;opacity:0.8;margin-top:2px}
+
+  /* Main card: holographic / glassmorphism */
+  .card{
+    width:100%;max-width:460px;background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));
+    border-radius:var(--card-radius);padding:18px;backdrop-filter: blur(10px) saturate(120%);
+    border:1px solid rgba(255,255,255,0.06);box-shadow: var(--neon);position:relative;z-index:4;
+  }
+
+  .progress-wrap{display:flex;flex-direction:column;align-items:center;gap:12px;padding:12px 6px}
+  /* Circular progress (SVG) */
+  .progress{
+    width:160px;height:160px;display:grid;place-items:center;position:relative;
+  }
+  .prog-svg{transform:rotate(-90deg)}
+  .progress-bg{stroke:rgba(255,255,255,0.06);stroke-width:10}
+  .progress-fg{stroke: url(#gcolor); stroke-width:10; stroke-linecap:round; transition:stroke-dashoffset 700ms cubic-bezier(.2,.9,.2,1)}
+
+  .status-text{font-weight:600;font-size:16px;text-align:center}
+  .meta{font-size:13px;opacity:0.85;text-align:center}
+
+  .stats{display:flex;gap:8px;justify-content:center;margin-top:8px}
+  .stat{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:8px 10px;border-radius:12px;font-size:13px}
+
+  /* Actions */
+  .actions{display:flex;gap:10px;margin-top:14px;justify-content:center}
+  .btn{
+    padding:10px 14px;border-radius:12px;border:1px solid rgba(255,255,255,0.06);
+    background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+    color:var(--text);font-weight:600;font-size:13px;cursor:pointer;
+  }
+  .btn.ghost{background:transparent}
+  .btn.primary{
+    background: linear-gradient(90deg, rgba(122,191,255,0.12), rgba(122,123,255,0.10));
+    box-shadow: 0 6px 20px rgba(122,191,255,0.06), 0 0 30px rgba(122,191,255,0.04);
+    border:1px solid rgba(122,191,255,0.25);
+  }
+
+  /* small explanatory text */
+  .hint{font-size:12px;opacity:0.75;margin-top:12px;text-align:center}
+
+  /* responsive larger screens */
+  @media(min-width:720px){
+    .wrap{padding:28px}
+    .progress{width:220px;height:220px}
+  }
+
+  /* reduced motion */
+  @media(prefers-reduced-motion: reduce){
+    .bg-layer, .floating-shapes, .progress-fg{transition:none;animation:none}
+  }
+</style>
 </head>
 <body>
-  <div id="root"></div>
-  <script type="module" src="./index.tsx"></script>
+<div class="wrap" role="main">
+  <div class="bg-layer" aria-hidden="true"></div>
+  <div class="floating-shapes" aria-hidden="true"></div>
+
+  <header>
+    <div>
+      <div class="title">Study Test</div>
+      <div class="subtitle">Processing Stage</div>
+    </div>
+    <div aria-hidden="true">⏳</div>
+  </header>
+
+  <main class="card" aria-live="polite">
+    <div class="progress-wrap">
+      <div class="progress" aria-hidden="false">
+        <svg class="prog-svg" viewBox="0 0 100 100" width="160" height="160" role="img" aria-label="Processing progress">
+          <defs>
+            <linearGradient id="gcolor" x1="0" x2="1">
+              <stop offset="0" stop-color="#7afcff"/>
+              <stop offset="1" stop-color="#7a7bff"/>
+            </linearGradient>
+          </defs>
+          <circle cx="50" cy="50" r="40" class="progress-bg" fill="none"/>
+          <circle cx="50" cy="50" r="40" class="progress-fg" fill="none" stroke-dasharray="251.2" stroke-dashoffset="251.2"/>
+        </svg>
+        <div style="position:absolute;display:flex;flex-direction:column;align-items:center">
+          <div style="font-size:20px;font-weight:700" id="percent">0%</div>
+          <div style="font-size:12px;opacity:0.85">Analyzing answers</div>
+        </div>
+      </div>
+
+      <div class="status-text" id="status">Queued • Preparing data</div>
+      <div class="meta">Estimated time: <strong id="eta">~45s</strong></div>
+
+      <div class="stats" aria-hidden="true">
+        <div class="stat">Processed: <strong id="processed">0</strong></div>
+        <div class="stat">Total: <strong id="total">20</strong></div>
+      </div>
+
+      <div class="actions">
+        <button class="btn ghost" id="cancel">Cancel</button>
+        <button class="btn primary" id="view">View Summary</button>
+      </div>
+
+      <div class="hint">Results will appear once processing completes. You can continue taking other tests.</div>
+    </div>
+  </main>
+
+</div>
+
+<script>
+  // Simulated progress for demo. Replace with real status updates (websocket / server-sent events / polling).
+  (function(){
+    const total = 20;
+    let processed = 0;
+    const processedEl = document.getElementById('processed');
+    const totalEl = document.getElementById('total');
+    const percentEl = document.getElementById('percent');
+    const statusEl = document.getElementById('status');
+    const etaEl = document.getElementById('eta');
+    const prog = document.querySelector('.progress-fg');
+
+    totalEl.textContent = total;
+
+    function updateUI(){
+      const pct = Math.round((processed/total)*100);
+      percentEl.textContent = pct + '%';
+      const circumference = 2 * Math.PI * 40;
+      prog.style.strokeDashoffset = String(Math.max(0, circumference * (1 - processed/total)));
+
+      processedEl.textContent = processed;
+      if(processed === 0) statusEl.textContent = 'Queued • Preparing data';
+      else if(processed < total) statusEl.textContent = 'Processing • Analyzing answers';
+      else statusEl.textContent = 'Complete • Results ready';
+
+      const remaining = Math.max(0, total - processed);
+      const est = remaining * 2 + 's'; // naive estimate
+      etaEl.textContent = processed < total ? '~' + est : 'Ready';
+    }
+
+    // Fake progress tick:
+    let interval = setInterval(()=>{
+      processed++;
+      if(processed>total) processed = total;
+      updateUI();
+      if(processed>=total) clearInterval(interval);
+    }, 1300);
+
+    // Accessible event handlers
+    document.getElementById('cancel').addEventListener('click', ()=>{
+      // show confirm; in production do an API call
+      if(confirm('Cancel processing?')) {
+        clearInterval(interval);
+        statusEl.textContent = 'Cancelled';
+        percentEl.textContent = '—';
+        prog.style.strokeDashoffset = String(2*Math.PI*40);
+      }
+    });
+
+    document.getElementById('view').addEventListener('click', ()=>{
+      // navigate to results or open a modal
+      alert('Opening summary (replace with real navigation).');
+    });
+
+    updateUI();
+  })();
+</script>
 </body>
 </html>
